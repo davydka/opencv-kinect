@@ -55,7 +55,8 @@ void ofApp::setup() {
 //--------------------------------------------------------------
 void ofApp::update() {
 	
-	ofBackground(100, 100, 100);
+	//ofBackground(100, 100, 100);
+	ofBackground(255, 255, 255);
 	
 	kinect.update();
 	
@@ -156,6 +157,7 @@ void ofApp::drawPointCloud() {
 	int h = 480;
 	ofMesh mesh;
 	mesh.setMode(OF_PRIMITIVE_POINTS);
+	//mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
 	int step = 2;
 	for(int y = 0; y < h; y += step) {
 		for(int x = 0; x < w; x += step) {
