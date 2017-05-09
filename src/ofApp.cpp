@@ -6,6 +6,9 @@
 */
 
 //--------------------------------------------------------------
+
+float tweenValue;
+
 void ofApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	
@@ -46,10 +49,11 @@ void ofApp::setup() {
 	
 	// zero the tilt on startup
 	angle = 0;
-	kinect.setCameraTiltAngle(angle);
+	//kinect.setCameraTiltAngle(angle);
 	
 	// start from the front
-	bDrawPointCloud = false;
+	bDrawPointCloud = true;
+	bRotate = true;
 }
 
 //--------------------------------------------------------------
@@ -96,7 +100,8 @@ void ofApp::update() {
 		// also, find holes is set to true so we will get interior contours as well....
 		//contourFinder.findContours(grayImage, 10, (kinect.width*kinect.height)/2, 20, false);
 	}
-	
+
+
 #ifdef USE_TWO_KINECTS
 	kinect2.update();
 #endif
@@ -109,6 +114,7 @@ void ofApp::draw() {
 	
 	if(bDrawPointCloud) {
 		easyCam.begin();
+//		easyCam.rotate(1, easyCam.getUpDir() );
 		drawPointCloud();
 		easyCam.end();
 	} else {
@@ -150,7 +156,10 @@ void ofApp::draw() {
     }
     
 	ofDrawBitmapString(reportStream.str(), 20, 652);
-    
+
+	//tweenValue = ofMap(sin(ofGetElapsedTimef()), -1, 1, 0, 360);
+	//ofLogNotice() << ofGetElapsedTimeMillis() % 1000;
+	tweenValue = ofMap((ofGetElapsedTimeMillis() % 12000), 0, 12000, 0, 360);
 }
 
 void ofApp::drawPointCloud() {
@@ -177,6 +186,13 @@ void ofApp::drawPointCloud() {
 	ofPushMatrix();
 	// the projected points are 'upside down' and 'backwards' 
 	ofScale(1, -1, -1);
+
+	if(bRotate)
+		ofRotateY(tweenValue);
+	else
+		ofRotateY(0);
+
+	//ofTranslate(0, 0, -500);
 	ofTranslate(0, 0, -1000); // center the points a bit
 	ofEnableDepthTest();
 	mesh.drawVertices();
@@ -186,7 +202,7 @@ void ofApp::drawPointCloud() {
 
 //--------------------------------------------------------------
 void ofApp::exit() {
-	kinect.setCameraTiltAngle(0); // zero the tilt on exit
+	//kinect.setCameraTiltAngle(0); // zero the tilt on exit
 	kinect.close();
 	
 #ifdef USE_TWO_KINECTS
@@ -200,7 +216,11 @@ void ofApp::keyPressed (int key) {
 		case ' ':
 			bThreshWithOpenCV = !bThreshWithOpenCV;
 			break;
-			
+
+		case'r':
+			bRotate = !bRotate;
+			break;
+
 		case'p':
 			bDrawPointCloud = !bDrawPointCloud;
 			break;

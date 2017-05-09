@@ -56,7 +56,8 @@ public:
 	
 	bool bThreshWithOpenCV;
 	bool bDrawPointCloud;
-	
+	bool bRotate;
+
 	int nearThreshold;
 	int farThreshold;
 	
