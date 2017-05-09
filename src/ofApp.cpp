@@ -38,9 +38,9 @@ void ofApp::setup() {
 	grayThreshNear.allocate(kinect.width, kinect.height);
 	grayThreshFar.allocate(kinect.width, kinect.height);
 	
-	nearThreshold = 230;
-	farThreshold = 70;
-	bThreshWithOpenCV = true;
+	nearThreshold = 255;
+	farThreshold = 190;
+	bThreshWithOpenCV = false;
 	
 	ofSetFrameRate(60);
 	
@@ -62,7 +62,7 @@ void ofApp::update() {
 	
 	// there is a new frame and we are connected
 	if(kinect.isFrameNew()) {
-		
+
 		// load grayscale depth image from the kinect source
 		grayImage.setFromPixels(kinect.getDepthPixels());
 		
@@ -79,9 +79,10 @@ void ofApp::update() {
 			// or we do it ourselves - show people how they can work with the pixels
 			ofPixels & pix = grayImage.getPixels();
 			int numPixels = pix.size();
+			//ofLogNotice() << numPixels;
 			for(int i = 0; i < numPixels; i++) {
 				if(pix[i] < nearThreshold && pix[i] > farThreshold) {
-					pix[i] = 255;
+					//pix[i] = 255;
 				} else {
 					pix[i] = 0;
 				}
@@ -93,7 +94,7 @@ void ofApp::update() {
 		
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
-		contourFinder.findContours(grayImage, 10, (kinect.width*kinect.height)/2, 20, false);
+		//contourFinder.findContours(grayImage, 10, (kinect.width*kinect.height)/2, 20, false);
 	}
 	
 #ifdef USE_TWO_KINECTS
@@ -124,7 +125,7 @@ void ofApp::draw() {
 	}
 	
 	// draw instructions
-	ofSetColor(255, 255, 255);
+	ofSetColor(0, 0, 1);
 	stringstream reportStream;
         
     if(kinect.hasAccelControl()) {
@@ -158,15 +159,20 @@ void ofApp::drawPointCloud() {
 	ofMesh mesh;
 	mesh.setMode(OF_PRIMITIVE_POINTS);
 	//mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-	int step = 2;
-	for(int y = 0; y < h; y += step) {
-		for(int x = 0; x < w; x += step) {
-			if(kinect.getDistanceAt(x, y) > 0) {
-				mesh.addColor(kinect.getColorAt(x,y));
-				mesh.addVertex(kinect.getWorldCoordinateAt(x, y));
-			}
+	int step = 2; //this seems to be for CPU reasons
+
+	ofPixels & pix = grayImage.getPixels();
+	int numPixels = pix.size();
+	for(int i = 0; i < numPixels; i += step) {
+		//if(pix[i] == 255) {
+		if(pix[i] < nearThreshold && pix[i] > farThreshold) {
+			int row    = (int)(i / w);
+			int column = i % w;
+			mesh.addColor(kinect.getColorAt(column,row));
+			mesh.addVertex(kinect.getWorldCoordinateAt(column, row));
 		}
 	}
+
 	glPointSize(3);
 	ofPushMatrix();
 	// the projected points are 'upside down' and 'backwards' 
